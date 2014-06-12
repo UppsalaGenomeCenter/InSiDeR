@@ -3,7 +3,9 @@ InSiDeR
 
 InSiDeR (Integration Site DetectoR) is a program designed for detecting integration sites from hybridization based capture of viral sequences.
 
-Check out Wiki to learn how to run InSiDeR.
+Here we present InSiDeR (Integration Site DetectoR), a program designed for detecting integration sites from hybridization based capture of viral sequences. Our algorithm makes it possible to detect integration sites throughout the entire genome, with high sensitivity and specificity, by a rapid processing of single-end read alignments to the host genome. The method can be applied to any viruses for which the reference sequence has been established, and also to other types of transposable DNA elements.
+
+Check out Wiki to learn how to run InSiDeR!
 
 
 
