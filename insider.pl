@@ -27,7 +27,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 
-my $insiderVersion = "version 1.1";
+my $insiderVersion = "version 1.1.1";
 
 # Read command line arguments
 my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $silent) = get_args_and_error_check();
