@@ -4,7 +4,7 @@
 ##
 ##   InSiDeR - virus integration site detection tool							 
 ##
-##   Copyright (C) 2014 Ignas Bunikis, Adam Ameur							 
+##   Copyright (C) 2015 Ignas Bunikis, Adam Ameur							 
 ##																			 
 ##    This program is free software: you can redistribute it and/or modify    
 ##    it under the terms of the GNU General Public License as published by    
