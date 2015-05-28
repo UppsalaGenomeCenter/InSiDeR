@@ -202,6 +202,40 @@ sub readStrand {
 	return $strand;
 } 
 
+sub alignQV {
+	my $missPos;
+	my $softclipedBases;
+	my @samline2;
+	my $readlen;
+	my $cigar2;
+	my $fraction = 0;
+
+	if (!(scalar(@_) == 1)) {
+		print "error: wrong number of arguments for alignQV"
+	} else {
+		$missPos = $_[0];
+		@samline2 = split("\t", $_[0]);
+		$cigar2 = $samline2[5];
+		$readlen = length($samline2[9]);
+		if ($cigar2 =~ m/^(\d+)S/) {
+			$softclipedBases = $1;
+		} elsif ($cigar2 =~ m/(\d+)S$/) {
+			$softclipedBases = $1;
+		}
+		if ($missPos =~ m/MD\:Z\:[0-9]+(([A-Z]|\^[A-Z]+)[0-9]+)*/) {
+			$missPos = $&;
+			($missPos) =~ s/MD\:Z\://;
+			my @missMatches = $missPos =~ m/[A-Z]|\^[A-Z]+/g;
+			my $missMatchesNr = @missMatches;
+			$fraction = ($missMatchesNr/($readlen - $softclipedBases))*100;
+			print "$readlen, $missPos, $cigar2, $softclipedBases, @missMatches, $missMatchesNr, $fraction\n";
+			} else {
+				$fraction = 0;
+			}
+	}
+	return $fraction;
+}
+
 # Argument and error handling
 sub get_args_and_error_check{
 	
