@@ -30,7 +30,7 @@ use Pod::Usage;
 my $insiderVersion = "version 1.1.1";
 
 # Read command line arguments
-my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $silent) = get_args_and_error_check();
+my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent) = get_args_and_error_check();
 
 unless($silent){
 	print STDOUT "\n************ Running InSiDeR $insiderVersion **********\n\n";
@@ -41,8 +41,6 @@ my $allReadsNr = 0;
 my $validReadsNr = 0;
 my %uniqPosReadsPlus = ();
 my %uniqPosReadsMinus = ();
-my $minMappingQV = 0;
-my $maxMappingMM = 0.5;
 
 unless($silent){
 	print STDOUT "Reading data from $filename...\n";
@@ -232,7 +230,7 @@ sub alignQV {
 			my @missMatches = $missPos =~ m/[A-Z]|\^[A-Z]+/g;
 			my $missMatchesNr = @missMatches;
 			$fraction = ($missMatchesNr/($readlen - $softclipedBases))*100;
-			print "$readlen, $missPos, $cigar2, $softclipedBases, @missMatches, $missMatchesNr, $fraction\n";
+			# print "$readlen, $missPos, $cigar2, $softclipedBases, @missMatches, $missMatchesNr, $fraction\n";
 			} else {
 				$fraction = 0;
 			}
@@ -245,7 +243,7 @@ sub get_args_and_error_check{
 	
 	if (@ARGV == 0) {pod2usage(-exitval => 2, -verbose => 0);}
 	
-	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $silent);
+	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent);
 
 	my $result = GetOptions("--help"           => sub{local *_=\$_[1];
 							                      pod2usage(-exitval =>2, -verbose => 1)},
@@ -255,6 +253,8 @@ sub get_args_and_error_check{
 							"-minp=i"          =>\$minPeak,
 							"-mins=i"          =>\$minSupport,
 	                        "-minc=i"          =>\$minClipLen,
+							"-minqv=i"         =>\$minMappingQV,
+	                        "-maxmm=i"         =>\$maxMappingMM,
 		                    "-silent!"         =>\$silent)|| pod2usage(-exitval => 2, -verbose => 1);
 
 	my $error_to_print;
@@ -294,7 +294,25 @@ sub get_args_and_error_check{
 	else{
 		$minClipLen=20;  # Set default value for 'minc'
 	}
-	
+
+	if(defined($minMappingQV)) {
+		if($minMappingQV < 0){
+			$error_to_print .= "\tInvalid value of 'minqv' $minMappingQV\n"
+		}
+	}
+	else{
+		$minMappingQV=0;  # Set default value for 'minqv'
+	}
+
+	if(defined($maxMappingMM)) {
+		if($maxMappingMM > 100){
+			$error_to_print .= "\tInvalid value of 'maxmm' $maxMappingMM\n"
+		}
+	}
+	else{
+		$maxMappingMM=0.5;  # Set default value for 'maxmm'
+	}
+
 	unless(defined($filename)) {
 		$error_to_print .= "\tNo input file specified.\n"
 	}
@@ -309,7 +327,7 @@ sub get_args_and_error_check{
 	}
 
 	else{
-		return ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $silent);
+		return ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent);
 	}
 	
 }
@@ -318,11 +336,11 @@ __END__
 
 =head1 NAME
 	
-splitseek.pl 
+insider.pl 
 	
 =head1 SYNOPSIS
 	
-./insider.pl [options] B<--help> B<-i> B<-o> B<-offset> B<-minp> B<-mins> B<-minc> B<--silent>
+./insider.pl [options] B<--help> B<-i> B<-o> B<-offset> B<-minp> B<-mins> B<-minc> B<-minqv> B<-maxmm> B<--silent>
 
 =head1 OPTIONS
 
@@ -355,6 +373,14 @@ Minimum number soft clipped reads starting at the exact same position in the ins
 =item B<-minc>
 
 Minimum number of soft clipped bases required for a read to be considered in the InSiDeR analysis (default=20).
+
+=item B<-minqv>
+
+Minimum mapping QV value a read to be considered in the InSiDeR analysis (default=0).
+
+=item B<-maxmm>
+
+Maximum fraction (%) of mismatches in aligned part of a read (default=1).
 
 =item B<--silent>
 Do not print status to stdout.
