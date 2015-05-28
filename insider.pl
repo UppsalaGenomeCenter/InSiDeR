@@ -41,6 +41,8 @@ my $allReadsNr = 0;
 my $validReadsNr = 0;
 my %uniqPosReadsPlus = ();
 my %uniqPosReadsMinus = ();
+my $minMappingQV = 0;
+my $maxMappingMM = 0.5;
 
 unless($silent){
 	print STDOUT "Reading data from $filename...\n";
@@ -58,23 +60,25 @@ while (my $row = <FILE>) {
 				
 		if (!($samline[1] & 4)) {
 			if ((($cigar =~ m/^(\d+)S/) && ($1 >= $minClipLen)) || (($cigar =~ m/(\d+)S$/) && ($1 >= $minClipLen))) {
-				my $chr = $samline[2];
-				my $start_pos = $samline[3]-1;
-				my $end_pos = endPosition($cigar, $start_pos);
-				my $strand = readStrand($samline[1]);
-				$validReads{$samline[0]} = [$samline[2], $strand, $start_pos, $end_pos, $samline[5], $samline[9]];
-				$validReadsNr++;
-
-				## Create empty hash for a chromosome..
-				if(!defined($uniqPosReadsPlus{$chr})){
-					$uniqPosReadsPlus{$chr} = ();
-				}
+				if (($samline[4] >= $minMappingQV) && (alignQV($row) <= $maxMappingMM)) {
+					my $chr = $samline[2];
+					my $start_pos = $samline[3]-1;
+					my $end_pos = endPosition($cigar, $start_pos);
+					my $strand = readStrand($samline[1]);
+					$validReads{$samline[0]} = [$samline[2], $strand, $start_pos, $end_pos, $samline[5], $samline[9]];
+					$validReadsNr++;
 				
-				if($strand eq "+"){
-					push @{$uniqPosReadsPlus{$chr}{$end_pos}}, $samline[0];
-				}
-				if($strand eq "-"){
-					push @{$uniqPosReadsMinus{$chr}{$start_pos}}, $samline[0];
+					## Create empty hash for a chromosome..
+					if(!defined($uniqPosReadsPlus{$chr})){
+						$uniqPosReadsPlus{$chr} = ();
+					}
+				
+					if($strand eq "+"){
+						push @{$uniqPosReadsPlus{$chr}{$end_pos}}, $samline[0];
+					}
+					if($strand eq "-"){
+						push @{$uniqPosReadsMinus{$chr}{$start_pos}}, $samline[0];
+					}
 				}
 				
 			}
