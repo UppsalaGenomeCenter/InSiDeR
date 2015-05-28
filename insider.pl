@@ -310,7 +310,7 @@ sub get_args_and_error_check{
 		}
 	}
 	else{
-		$maxMappingMM=0.5;  # Set default value for 'maxmm'
+		$maxMappingMM=1;  # Set default value for 'maxmm'
 	}
 
 	unless(defined($filename)) {
