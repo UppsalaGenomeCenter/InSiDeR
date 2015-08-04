@@ -108,7 +108,7 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 			my $bestEnd = "NA";
 			
 			## Check if there is some peak on minus strand in a window surrounding plus strand peak..
-			for(my $coord = $plusPos-$offset; $coord<=$plusPos; $coord++){
+			for(my $coord = $plusPos-$offset; $coord<=$plusPos+$offset; $coord++){
 
 				if(defined($uniqPosReadsMinus{$chr}{$coord})){
 					my $minusHeight = scalar @{$uniqPosReadsMinus{$chr}{$coord}};
