@@ -32,6 +32,10 @@ my $insiderVersion = "version 1.1.1";
 # Read command line arguments
 my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent) = get_args_and_error_check();
 
+#my $cmdline = qx(ps -o args $$);
+#print $cmdline;
+#exit;
+
 unless($silent){
 	print STDOUT "\n************ Running InSiDeR $insiderVersion **********\n\n";
 }
@@ -120,9 +124,11 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 						if($support >= $minSupport){
 							my $minPos = $plusPos;
 							my $maxPos = $coord;
+							my $peakStrand = "Facing";
 							if($coord < $plusPos){
 								$minPos = $coord;
 								$maxPos = $plusPos;
+								$peakStrand = "Opposit";
 							}
 
 							my $windowPos = int(($minPos+($maxPos-$minPos)/2)/100);
@@ -131,13 +137,13 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 							my $support =  $plusHeight+$minusHeight;
 							
 							if(!defined($peakSupport{$peakKey})){
-								$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight];
+								$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakStrand];
 								$peakSupport{$peakKey} = $support;
 							}
 							else{
 								my $currentSupport = $peakSupport{$peakKey};
 								if($support>$currentSupport){
-									$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight];
+									$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakStrand];
 									$peakSupport{$peakKey} = $support;
 								}
 							}
@@ -161,8 +167,9 @@ foreach my $key (sort keys %peaks) {
 	my $maxPos = $value[2];
 	my $plusHeight = $value[3];
 	my $minusHeight = $value[4];
+	my $peakStrand = $value[5];
 
-	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\n";
+	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakStrand\n";
 	$totalNrpeaks++;
 }
 
