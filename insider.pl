@@ -32,10 +32,6 @@ my $insiderVersion = "version 1.1.1";
 # Read command line arguments
 my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent) = get_args_and_error_check();
 
-#my $cmdline = qx(ps -o args $$);
-#print $cmdline;
-#exit;
-
 unless($silent){
 	print STDOUT "\n************ Running InSiDeR $insiderVersion **********\n\n";
 }
@@ -169,6 +165,8 @@ foreach my $key (sort keys %peaks) {
 	my $minusHeight = $value[4];
 	my $peakStrand = $value[5];
 
+	resultsHeader();
+
 	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakStrand\n";
 	$totalNrpeaks++;
 }
@@ -245,8 +243,24 @@ sub alignQV {
 	return $fraction;
 }
 
+# Header
+sub resultsHeader {
+	my $cmdline = qx(ps -o args $$);
+	$cmdline =~ s/\n//g;
+	$cmdline =~ s/COM.*insider/insider/;
+	my $analysisDate = localtime();
+	
+	print OUTFILE "##\n";
+	print OUTFILE "## Results were generated using InSiDeR $insiderVersion\n";
+	print OUTFILE "## The following command line was executed\:\n";
+	print OUTFILE "## $cmdline\n";
+	print OUTFILE "## Analysis was performed on $analysisDate\n";
+	print OUTFILE "## Thank you for choosing InSiDeR!\n";
+	print OUTFILE "##\n";
+}
+
 # Argument and error handling
-sub get_args_and_error_check{
+sub get_args_and_error_check {
 	
 	if (@ARGV == 0) {pod2usage(-exitval => 2, -verbose => 0);}
 	
