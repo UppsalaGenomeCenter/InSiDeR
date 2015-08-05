@@ -103,10 +103,6 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 
 		if($plusHeight > $minPeak){
 
-			my $bestSupport = 0;
-			my $bestCoord = "NA";
-			my $bestEnd = "NA";
-			
 			## Check if there is some peak on minus strand in a window surrounding plus strand peak..
 			for(my $coord = $plusPos-$offset; $coord<=$plusPos+$offset; $coord++){
 
@@ -120,11 +116,11 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 						if($support >= $minSupport){
 							my $minPos = $plusPos;
 							my $maxPos = $coord;
-							my $peakStrand = "Facing";
+							my $peakDirection = "Facing";
 							if($coord < $plusPos){
 								$minPos = $coord;
 								$maxPos = $plusPos;
-								$peakStrand = "Opposit";
+								$peakDirection = "Opposit";
 							}
 
 							my $windowPos = int(($minPos+($maxPos-$minPos)/2)/100);
@@ -133,13 +129,13 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 							my $support =  $plusHeight+$minusHeight;
 							
 							if(!defined($peakSupport{$peakKey})){
-								$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakStrand];
+								$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
 								$peakSupport{$peakKey} = $support;
 							}
 							else{
 								my $currentSupport = $peakSupport{$peakKey};
 								if($support>$currentSupport){
-									$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakStrand];
+									$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
 									$peakSupport{$peakKey} = $support;
 								}
 							}
@@ -149,7 +145,6 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 			}
 		}
 	}
-
 }
 
 my $totalNrpeaks = 0;
@@ -166,9 +161,9 @@ foreach my $key (sort keys %peaks) {
 	my $maxPos = $value[2];
 	my $plusHeight = $value[3];
 	my $minusHeight = $value[4];
-	my $peakStrand = $value[5];
+	my $peakDirection = $value[5];
 
-	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakStrand\n";
+	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakDirection\n";
 	$totalNrpeaks++;
 }
 
