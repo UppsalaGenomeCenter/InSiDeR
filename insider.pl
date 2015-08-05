@@ -155,6 +155,9 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 my $totalNrpeaks = 0;
 open(OUTFILE,"> $outfile") or die "Can't open file: $outfile\n";
 
+# Print header information
+resultsHeader();
+
 ## Loop through clipped peaks and print output...
 foreach my $key (sort keys %peaks) {
 	my @value = @{$peaks{$key}};
@@ -164,8 +167,6 @@ foreach my $key (sort keys %peaks) {
 	my $plusHeight = $value[3];
 	my $minusHeight = $value[4];
 	my $peakStrand = $value[5];
-
-	resultsHeader();
 
 	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakStrand\n";
 	$totalNrpeaks++;
