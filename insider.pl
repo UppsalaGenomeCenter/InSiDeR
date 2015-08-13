@@ -288,7 +288,7 @@ unless($silent){
 ##
 ########################
 
-
+## Determine end position
 sub endPosition {
 	my $endPos = 0;
 	if (!(scalar(@_) == 2)) {
@@ -300,6 +300,7 @@ sub endPosition {
 	return int($endPos);
 }
 
+## Determine read strand
 sub readStrand {
 	my $strand;
 	if (!(scalar(@_) == 1)) {
@@ -314,6 +315,7 @@ sub readStrand {
 	return $strand;
 } 
 
+## Alignmet quality filter
 sub alignQV {
 	my $missPos;
 	my $softclipedBases;
@@ -348,7 +350,7 @@ sub alignQV {
 	return $fraction;
 }
 
-# Header
+## Header
 sub resultsHeader {
 	my $cmdline = qx(ps -o args $$);
 	$cmdline =~ s/\n//g;
