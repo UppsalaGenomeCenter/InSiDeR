@@ -41,6 +41,10 @@ my $allReadsNr = 0;
 my $validReadsNr = 0;
 my %uniqPosReadsPlus = ();
 my %uniqPosReadsMinus = ();
+my %peaks = ();
+my %peakSupport = ();
+my %uniqPosReadsPlusAbMin = ();
+my %uniqPosReadsMinusAbMin = ();
 
 unless($silent){
 	print STDOUT "Reading data from $filename...\n";
@@ -48,6 +52,7 @@ unless($silent){
 
 open(FILE, "<", $filename) or die "cannot open: $!";
 
+## Filter and sort the reads
 while (my $row = <FILE>) {
 	chomp $row;
 
@@ -70,7 +75,10 @@ while (my $row = <FILE>) {
 					if(!defined($uniqPosReadsPlus{$chr})){
 						$uniqPosReadsPlus{$chr} = ();
 					}
-				
+					if(!defined($uniqPosReadsMinus{$chr})){
+						$uniqPosReadsMinus{$chr} = ();
+					}
+									
 					if($strand eq "+"){
 						push @{$uniqPosReadsPlus{$chr}{$end_pos}}, $samline[0];
 					}
@@ -91,8 +99,26 @@ unless($silent){
 	print STDOUT "Searching for sites of integrated DNA...\n"
 }
 
-my %peaks = ();
-my %peakSupport = ();
+## Filter Plus peaks by coverage
+foreach my $chr (sort keys %uniqPosReadsPlus) {
+	foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlus{$chr}}){
+		my $plusHeight = scalar @{$uniqPosReadsPlus{$chr}{$plusPos}};
+		if($plusHeight > $minPeak){
+			@{$uniqPosReadsPlusAbMin{$chr}{$plusPos}} = @{$uniqPosReadsPlus{$chr}{$plusPos}};
+		}
+	}
+}
+
+## Filter Minus peaks by coverage
+foreach my $chr (sort keys %uniqPosReadsMinus) {
+	foreach my $minusPos (sort {$a<=>$b} keys %{$uniqPosReadsMinus{$chr}}){
+		my $minusHeight = scalar @{$uniqPosReadsMinus{$chr}{$minusPos}};
+		if($minusHeight > $minPeak){
+			@{$uniqPosReadsMinusAbMin{$chr}{$minusPos}} = @{$uniqPosReadsMinus{$chr}{$minusPos}};
+		} 
+
+	}
+}
 
 ## Loop through clipped peaks on plus strand...
 foreach my $chr (sort keys %uniqPosReadsPlus) {
