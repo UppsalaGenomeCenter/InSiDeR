@@ -229,10 +229,57 @@ foreach my $key (sort keys %peaks) {
 
 }
 
+if ($singlePeaks) {
+	print OUTFILE "#Single peaks on Plus strand:\n";
+	foreach my $chr (sort keys %uniqPosReadsPlusAbMin) {
+		foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlusAbMin{$chr}}){
+			my $plusHeight = scalar @{$uniqPosReadsPlusAbMin{$chr}{$plusPos}};
+			print OUTFILE "$chr\t$plusPos\t-\t$plusHeight\n";
+			$totalNrpeaks++;
+			if ($printReads) {
+				my $fileName = $chr."_".$plusPos."_SinglePeak";
+				if (-e "$fileName.fwd.fasta") {
+					open(FWD,">$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
+					} else {
+						open(FWD,">>$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
+					}
+					for (my $i = $plusPos-10; $i <= $plusPos+10; $i++) {
+						foreach (@{$uniqPosReadsPlus{$chr}{$i}}) {
+							print FWD ">$_\n", @{$validReads{$_}}[5], "\n";
+						}
+					}
+					close (FWD);
+				}
+			}
+		}
+		print OUTFILE "#Single peaks on Minus strand:\n";
+		foreach my $chr (sort keys %uniqPosReadsMinusAbMin) {
+			foreach my $minusPos (sort {$a<=>$b} keys %{$uniqPosReadsMinusAbMin{$chr}}){
+				my $minusHeight = scalar @{$uniqPosReadsMinusAbMin{$chr}{$minusPos}};
+				print OUTFILE "$chr\t$minusPos\t-\t$minusHeight\n";
+				$totalNrpeaks++;
+				if ($printReads) {
+					my $fileName = $chr."_".$minusPos."_SinglePeak";
+					if (-e "$fileName.rev.fasta") {
+						open(REV,">$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta $!";
+						} else {
+							open(REV,">>$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta, $!";
+						}
+						for (my $i = $minusPos-10; $i <= $minusPos+10; $i++) {
+							foreach (@{$uniqPosReadsMinus{$chr}{$i}}) {
+								print REV ">$_\n", @{$validReads{$_}}[5], "\n";
+							}
+						}
+						close (REV);
+					}
+				}
+			}
+		}
+
 close(OUTFILE);
 
 unless($silent){
-	print STDOUT " - All done! $totalNrpeaks sites written to $outfile\n\n";
+	print STDOUT " - All done! $totalNrpeaks sites written to $outfileName\n\n";
 }
 
 ########################
