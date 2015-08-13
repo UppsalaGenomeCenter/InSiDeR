@@ -60,7 +60,7 @@ while (my $row = <FILE>) {
 		my @samline = split("\t", $row);
 		my $cigar = $samline[5];
 		$allReadsNr++;
-				
+
 		if (!($samline[1] & 4)) {
 			if ((($cigar =~ m/^(\d+)S/) && ($1 >= $minClipLen)) || (($cigar =~ m/(\d+)S$/) && ($1 >= $minClipLen))) {
 				if (($samline[4] >= $minMappingQV) && (alignQV($row) <= $maxMappingMM)) {
@@ -70,7 +70,7 @@ while (my $row = <FILE>) {
 					my $strand = readStrand($samline[1]);
 					$validReads{$samline[0]} = [$samline[2], $strand, $start_pos, $end_pos, $samline[5], $samline[9]];
 					$validReadsNr++;
-				
+
 					## Create empty hash for a chromosome..
 					if(!defined($uniqPosReadsPlus{$chr})){
 						$uniqPosReadsPlus{$chr} = ();
@@ -78,7 +78,7 @@ while (my $row = <FILE>) {
 					if(!defined($uniqPosReadsMinus{$chr})){
 						$uniqPosReadsMinus{$chr} = ();
 					}
-									
+
 					if($strand eq "+"){
 						push @{$uniqPosReadsPlus{$chr}{$end_pos}}, $samline[0];
 					}
@@ -101,8 +101,11 @@ unless($silent){
 
 ## Filter Plus peaks by coverage
 foreach my $chr (sort keys %uniqPosReadsPlus) {
+
 	foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlus{$chr}}){
+
 		my $plusHeight = scalar @{$uniqPosReadsPlus{$chr}{$plusPos}};
+
 		if($plusHeight > $minPeak){
 			@{$uniqPosReadsPlusAbMin{$chr}{$plusPos}} = @{$uniqPosReadsPlus{$chr}{$plusPos}};
 		}
@@ -111,8 +114,11 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 
 ## Filter Minus peaks by coverage
 foreach my $chr (sort keys %uniqPosReadsMinus) {
+
 	foreach my $minusPos (sort {$a<=>$b} keys %{$uniqPosReadsMinus{$chr}}){
+
 		my $minusHeight = scalar @{$uniqPosReadsMinus{$chr}{$minusPos}};
+
 		if($minusHeight > $minPeak){
 			@{$uniqPosReadsMinusAbMin{$chr}{$minusPos}} = @{$uniqPosReadsMinus{$chr}{$minusPos}};
 		} 
@@ -122,7 +128,7 @@ foreach my $chr (sort keys %uniqPosReadsMinus) {
 
 ## Loop through clipped peaks on plus strand...
 foreach my $chr (sort keys %uniqPosReadsPlus) {
-		
+
 	foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlus{$chr}}){
 
 		my $plusHeight = scalar @{$uniqPosReadsPlus{$chr}{$plusPos}};
@@ -161,15 +167,15 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 							my $support =  $plusHeight+$minusHeight;
 							
 							if(!defined($peakSupport{$peakKey})){
-							 	$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
-							 	$peakSupport{$peakKey} = $support;
-							 }
-							 else{
-							 	my $currentSupport = $peakSupport{$peakKey};
-							 	if($support>$currentSupport){
-							 		$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
-							 		$peakSupport{$peakKey} = $support;
-							 	}
+								$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
+								$peakSupport{$peakKey} = $support;
+							}
+							else{
+								my $currentSupport = $peakSupport{$peakKey};
+								if($support>$currentSupport){
+									$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
+									$peakSupport{$peakKey} = $support;
+								}
 							}
 						}
 					}
@@ -216,9 +222,11 @@ foreach my $key (sort keys %peaks) {
 				}
 
 				for (my $i = $minPos; $i <= $maxPos; $i++) {
+
 					foreach (@{$uniqPosReadsPlus{$chr}{$i}}) {
 						print FWD ">$_\n", @{$validReads{$_}}[5], "\n";
 					}
+
 					foreach (@{$uniqPosReadsMinus{$chr}{$i}}) {
 						print REV ">$_\n", @{$validReads{$_}}[5], "\n";
 					}
@@ -227,54 +235,67 @@ foreach my $key (sort keys %peaks) {
 				close (REV);
 			}
 
-}
-
-if ($singlePeaks) {
-	print OUTFILE "#Single peaks on Plus strand:\n";
-	foreach my $chr (sort keys %uniqPosReadsPlusAbMin) {
-		foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlusAbMin{$chr}}){
-			my $plusHeight = scalar @{$uniqPosReadsPlusAbMin{$chr}{$plusPos}};
-			print OUTFILE "$chr\t$plusPos\t-\t$plusHeight\n";
-			$totalNrpeaks++;
-			if ($printReads) {
-				my $fileName = $chr."_".$plusPos."_SinglePeak";
-				if (-e "$fileName.fwd.fasta") {
-					open(FWD,">$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
-					} else {
-						open(FWD,">>$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
-					}
-					for (my $i = $plusPos-10; $i <= $plusPos+10; $i++) {
-						foreach (@{$uniqPosReadsPlus{$chr}{$i}}) {
-							print FWD ">$_\n", @{$validReads{$_}}[5], "\n";
-						}
-					}
-					close (FWD);
-				}
-			}
 		}
-		print OUTFILE "#Single peaks on Minus strand:\n";
-		foreach my $chr (sort keys %uniqPosReadsMinusAbMin) {
-			foreach my $minusPos (sort {$a<=>$b} keys %{$uniqPosReadsMinusAbMin{$chr}}){
-				my $minusHeight = scalar @{$uniqPosReadsMinusAbMin{$chr}{$minusPos}};
-				print OUTFILE "$chr\t$minusPos\t-\t$minusHeight\n";
-				$totalNrpeaks++;
-				if ($printReads) {
-					my $fileName = $chr."_".$minusPos."_SinglePeak";
-					if (-e "$fileName.rev.fasta") {
-						open(REV,">$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta $!";
-						} else {
-							open(REV,">>$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta, $!";
+
+		if ($singlePeaks) {
+			print OUTFILE "#Single peaks on Plus strand:\n";
+
+			foreach my $chr (sort keys %uniqPosReadsPlusAbMin) {
+
+				foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlusAbMin{$chr}}){
+
+					my $plusHeight = scalar @{$uniqPosReadsPlusAbMin{$chr}{$plusPos}};
+					print OUTFILE "$chr\t$plusPos\t-\t$plusHeight\n";
+					$totalNrpeaks++;
+
+					if ($printReads) {
+						my $fileName = $chr."_".$plusPos."_SinglePeak";
+
+						if (-e "$fileName.fwd.fasta") {
+							open(FWD,">$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
+							} else {
+								open(FWD,">>$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
+							}
+							for (my $i = $plusPos-10; $i <= $plusPos+10; $i++) {
+
+								foreach (@{$uniqPosReadsPlus{$chr}{$i}}) {
+									print FWD ">$_\n", @{$validReads{$_}}[5], "\n";
+								}
+							}
+							close (FWD);
 						}
-						for (my $i = $minusPos-10; $i <= $minusPos+10; $i++) {
-							foreach (@{$uniqPosReadsMinus{$chr}{$i}}) {
-								print REV ">$_\n", @{$validReads{$_}}[5], "\n";
+					}
+				}
+
+				print OUTFILE "#Single peaks on Minus strand:\n";
+
+				foreach my $chr (sort keys %uniqPosReadsMinusAbMin) {
+
+					foreach my $minusPos (sort {$a<=>$b} keys %{$uniqPosReadsMinusAbMin{$chr}}){
+
+						my $minusHeight = scalar @{$uniqPosReadsMinusAbMin{$chr}{$minusPos}};
+						print OUTFILE "$chr\t$minusPos\t-\t$minusHeight\n";
+						$totalNrpeaks++;
+
+						if ($printReads) {
+							my $fileName = $chr."_".$minusPos."_SinglePeak";
+
+							if (-e "$fileName.rev.fasta") {
+								open(REV,">$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta $!";
+								} else {
+									open(REV,">>$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta, $!";
+								}
+								for (my $i = $minusPos-10; $i <= $minusPos+10; $i++) {
+
+									foreach (@{$uniqPosReadsMinus{$chr}{$i}}) {
+										print REV ">$_\n", @{$validReads{$_}}[5], "\n";
+									}
+								}
+								close (REV);
 							}
 						}
-						close (REV);
 					}
 				}
-			}
-		}
 
 close(OUTFILE);
 
@@ -293,27 +314,27 @@ sub endPosition {
 	my $endPos = 0;
 	if (!(scalar(@_) == 2)) {
 		print "error: wrong number of arguments for endPosition"
-	} else {
-	$endPos = $_[1];
-	$_[0] =~ s/(\d+)[NMD]/$endPos+=$1/eg;
+		} else {
+			$endPos = $_[1];
+			$_[0] =~ s/(\d+)[NMD]/$endPos+=$1/eg;
+		}
+		return int($endPos);
 	}
-	return int($endPos);
-}
 
 ## Determine read strand
 sub readStrand {
 	my $strand;
 	if (!(scalar(@_) == 1)) {
 		print "error: wrong number of arguments for readStrand"
-	} else {
-		if ($_[0] & 16) {
-			$strand = "-";
 		} else {
-			$strand = "+";
-		}
-	}	
-	return $strand;
-} 
+			if ($_[0] & 16) {
+				$strand = "-";
+				} else {
+					$strand = "+";
+				}
+			}	
+			return $strand;
+		} 
 
 ## Alignmet quality filter
 sub alignQV {
@@ -326,29 +347,29 @@ sub alignQV {
 
 	if (!(scalar(@_) == 1)) {
 		print "error: wrong number of arguments for alignQV"
-	} else {
-		$missPos = $_[0];
-		@samline2 = split("\t", $_[0]);
-		$cigar2 = $samline2[5];
-		$readlen = length($samline2[9]);
-		if ($cigar2 =~ m/^(\d+)S/) {
-			$softclipedBases = $1;
-		} elsif ($cigar2 =~ m/(\d+)S$/) {
-			$softclipedBases = $1;
-		}
-		if ($missPos =~ m/MD\:Z\:[0-9]+(([A-Z]|\^[A-Z]+)[0-9]+)*/) {
-			$missPos = $&;
-			($missPos) =~ s/MD\:Z\://;
-			my @missMatches = $missPos =~ m/[A-Z]|\^[A-Z]+/g;
-			my $missMatchesNr = @missMatches;
-			$fraction = ($missMatchesNr/($readlen - $softclipedBases))*100;
+		} else {
+			$missPos = $_[0];
+			@samline2 = split("\t", $_[0]);
+			$cigar2 = $samline2[5];
+			$readlen = length($samline2[9]);
+			if ($cigar2 =~ m/^(\d+)S/) {
+				$softclipedBases = $1;
+				} elsif ($cigar2 =~ m/(\d+)S$/) {
+					$softclipedBases = $1;
+				}
+				if ($missPos =~ m/MD\:Z\:[0-9]+(([A-Z]|\^[A-Z]+)[0-9]+)*/) {
+					$missPos = $&;
+					($missPos) =~ s/MD\:Z\://;
+					my @missMatches = $missPos =~ m/[A-Z]|\^[A-Z]+/g;
+					my $missMatchesNr = @missMatches;
+					$fraction = ($missMatchesNr/($readlen - $softclipedBases))*100;
 			# print "$readlen, $missPos, $cigar2, $softclipedBases, @missMatches, $missMatchesNr, $fraction\n";
 			} else {
 				$fraction = 0;
 			}
+		}
+		return $fraction;
 	}
-	return $fraction;
-}
 
 ## Header
 sub resultsHeader {
@@ -374,18 +395,18 @@ sub get_args_and_error_check {
 	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent,  $singlePeaks, $printReads);
 
 	my $result = GetOptions("--help"           => sub{local *_=\$_[1];
-							                      pod2usage(-exitval =>2, -verbose => 1)},
-		                    "-i=s"             =>\$filename,
-							"-o=s"             =>\$outfile,
-							"-offset=i"        =>\$offset,
-							"-minp=i"          =>\$minPeak,
-							"-mins=i"          =>\$minSupport,
-	                        "-minc=i"          =>\$minClipLen,
-							"-minqv=i"         =>\$minMappingQV,
-	                        "-maxmm=i"         =>\$maxMappingMM,
-	                        "-pr!"			   =>\$printReads,
-	                        "-ps!"			   =>\$singlePeaks,
-		                    "-silent!"         =>\$silent)|| pod2usage(-exitval => 2, -verbose => 1);
+		pod2usage(-exitval =>2, -verbose => 1)},
+		"-i=s"             =>\$filename,
+		"-o=s"             =>\$outfile,
+		"-offset=i"        =>\$offset,
+		"-minp=i"          =>\$minPeak,
+		"-mins=i"          =>\$minSupport,
+		"-minc=i"          =>\$minClipLen,
+		"-minqv=i"         =>\$minMappingQV,
+		"-maxmm=i"         =>\$maxMappingMM,
+		"-pr!"			   =>\$printReads,
+		"-ps!"			   =>\$singlePeaks,
+		"-silent!"         =>\$silent)|| pod2usage(-exitval => 2, -verbose => 1);
 
 	my $error_to_print;
 
@@ -407,7 +428,7 @@ sub get_args_and_error_check {
 		$minPeak=3;  # Set default value for 'minp'
 	}
 
-   	if(defined($minSupport)) {
+	if(defined($minSupport)) {
 		if($minSupport < 1){
 			$error_to_print .= "\tInvalid value of 'mins' $minSupport\n"
 		}
@@ -447,7 +468,7 @@ sub get_args_and_error_check {
 		$error_to_print .= "\tNo input file specified.\n"
 	}
 
-    unless(defined($outfile)) {
+	unless(defined($outfile)) {
 		$error_to_print .= "\tNo outfile prefix specified.\n"
 	}
 	
