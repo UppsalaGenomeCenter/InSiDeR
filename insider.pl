@@ -183,7 +183,7 @@ my $totalNrpeaks = 0;
 my $outfileName = $outfile.".insider";
 open(OUTFILE,"> $outfileName") or die "Can't open file: $outfile\n";
 
-# Print header information
+## Print header information
 resultsHeader();
 
 ## Loop through clipped peaks and print output...
@@ -197,7 +197,36 @@ foreach my $key (sort keys %peaks) {
 	my $peakDirection = $value[5];
 
 	print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakDirection\n";
+
 	$totalNrpeaks++;
+
+	if ($printReads) {
+
+		my $fileName = $chr."_".$minPos."_".$maxPos;
+
+		if (-e "$fileName.fwd.fasta") {
+			open(FWD,">$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
+			} else {
+				open(FWD,">>$fileName.fwd.fasta") || die "Couldn't open file $fileName.fwd.fasta, $!";
+			}
+			if (-e "$fileName.rev.fasta") {
+				open(REV,">$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta $!";
+				} else {
+					open(REV,">>$fileName.rev.fasta") || die "Couldn't open file $fileName.rev.fasta, $!";
+				}
+
+				for (my $i = $minPos; $i <= $maxPos; $i++) {
+					foreach (@{$uniqPosReadsPlus{$chr}{$i}}) {
+						print FWD ">$_\n", @{$validReads{$_}}[5], "\n";
+					}
+					foreach (@{$uniqPosReadsMinus{$chr}{$i}}) {
+						print REV ">$_\n", @{$validReads{$_}}[5], "\n";
+					}
+				}
+				close (FWD);
+				close (REV);
+			}
+
 }
 
 close(OUTFILE);
