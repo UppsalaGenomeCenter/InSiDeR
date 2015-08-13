@@ -180,7 +180,8 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 }
 
 my $totalNrpeaks = 0;
-open(OUTFILE,"> $outfile") or die "Can't open file: $outfile\n";
+my $outfileName = $outfile.".insider";
+open(OUTFILE,"> $outfileName") or die "Can't open file: $outfile\n";
 
 # Print header information
 resultsHeader();
