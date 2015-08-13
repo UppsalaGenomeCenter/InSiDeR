@@ -128,7 +128,7 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 		my $plusHeight = scalar @{$uniqPosReadsPlus{$chr}{$plusPos}};
 
 		if($plusHeight > $minPeak){
-
+			
 			## Check if there is some peak on minus strand in a window surrounding plus strand peak..
 			for(my $coord = $plusPos-$offset; $coord<=$plusPos+$offset; $coord++){
 
@@ -136,6 +136,7 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 					my $minusHeight = scalar @{$uniqPosReadsMinus{$chr}{$coord}};
 
 					if($minusHeight > $minPeak){
+
 						my $support = $plusHeight+$minusHeight; 
 
 						## Store all coordinates with sufficient support
@@ -143,6 +144,11 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 							my $minPos = $plusPos;
 							my $maxPos = $coord;
 							my $peakDirection = "Facing";
+
+							## Removed matched peaks
+							delete $uniqPosReadsPlusAbMin{$chr}{$plusPos};
+							delete $uniqPosReadsMinusAbMin{$chr}{$coord};
+
 							if($coord < $plusPos){
 								$minPos = $coord;
 								$maxPos = $plusPos;
@@ -155,15 +161,15 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 							my $support =  $plusHeight+$minusHeight;
 							
 							if(!defined($peakSupport{$peakKey})){
-								$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
-								$peakSupport{$peakKey} = $support;
-							}
-							else{
-								my $currentSupport = $peakSupport{$peakKey};
-								if($support>$currentSupport){
-									$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
-									$peakSupport{$peakKey} = $support;
-								}
+							 	$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
+							 	$peakSupport{$peakKey} = $support;
+							 }
+							 else{
+							 	my $currentSupport = $peakSupport{$peakKey};
+							 	if($support>$currentSupport){
+							 		$peaks{$peakKey} = [$chr, $minPos, $maxPos, $plusHeight, $minusHeight, $peakDirection];
+							 		$peakSupport{$peakKey} = $support;
+							 	}
 							}
 						}
 					}
