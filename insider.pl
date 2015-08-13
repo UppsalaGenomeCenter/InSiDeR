@@ -29,8 +29,8 @@ use Pod::Usage;
 
 my $insiderVersion = "version 1.1.2";
 
-# Read command line arguments
-my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent) = get_args_and_error_check();
+## Read command line arguments
+my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent, $singlePeaks, $printReads) = get_args_and_error_check();
 
 unless($silent){
 	print STDOUT "\n************ Running InSiDeR $insiderVersion **********\n\n";
@@ -255,12 +255,12 @@ sub resultsHeader {
 	print OUTFILE "##\n";
 }
 
-# Argument and error handling
+## Argument and error handling
 sub get_args_and_error_check {
 	
 	if (@ARGV == 0) {pod2usage(-exitval => 2, -verbose => 0);}
 	
-	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent);
+	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent,  $singlePeaks, $printReads);
 
 	my $result = GetOptions("--help"           => sub{local *_=\$_[1];
 							                      pod2usage(-exitval =>2, -verbose => 1)},
@@ -272,6 +272,8 @@ sub get_args_and_error_check {
 	                        "-minc=i"          =>\$minClipLen,
 							"-minqv=i"         =>\$minMappingQV,
 	                        "-maxmm=i"         =>\$maxMappingMM,
+	                        "-pr!"			   =>\$printReads,
+	                        "-ps!"			   =>\$singlePeaks,
 		                    "-silent!"         =>\$silent)|| pod2usage(-exitval => 2, -verbose => 1);
 
 	my $error_to_print;
@@ -335,7 +337,7 @@ sub get_args_and_error_check {
 	}
 
     unless(defined($outfile)) {
-		$error_to_print .= "\tNo outfile specified.\n"
+		$error_to_print .= "\tNo outfile prefix specified.\n"
 	}
 	
 	if(defined $error_to_print) {
@@ -344,7 +346,7 @@ sub get_args_and_error_check {
 	}
 
 	else{
-		return ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent);
+		return ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $silent, $singlePeaks, $printReads);
 	}
 	
 }
@@ -357,7 +359,7 @@ insider.pl
 	
 =head1 SYNOPSIS
 	
-./insider.pl [options] B<--help> B<-i> B<-o> B<-offset> B<-minp> B<-mins> B<-minc> B<-minqv> B<-maxmm> B<--silent>
+./insider.pl [options] B<--help> B<-i> B<-o> B<-offset> B<-minp> B<-mins> B<-minc> B<-minqv> B<-maxmm> B<-pr B<-ps B<-silent>
 
 =head1 OPTIONS
 
@@ -371,7 +373,7 @@ InSiDeR input file (SAM format).
 
 =item B<-o>
 
-Output file for InSiDeR results.
+Output file prefix for InSiDeR results.
 
 =item [OPTIONAL]
 
@@ -399,7 +401,16 @@ Minimum mapping QV value a read to be considered in the InSiDeR analysis (defaul
 
 Maximum fraction (%) of mismatches in aligned part of a read (default=1).
 
-=item B<--silent>
+=item B<-pr>
+
+Generate read files in FASTA format for each identified integration site or single peak.
+
+=item B<-ps>
+
+In the result file include peaks that passed filtering, but did not have a corresponding peak on the opposite strand.
+
+=item B<-silent>
+
 Do not print status to stdout.
 
 =back
