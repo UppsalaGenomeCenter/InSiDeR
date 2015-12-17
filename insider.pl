@@ -155,7 +155,7 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 							delete $uniqPosReadsPlusAbMin{$chr}{$plusPos};
 							delete $uniqPosReadsMinusAbMin{$chr}{$coord};
 
-							if($coord < $plusPos){
+							if($coord < ($plusPos - 10)){
 								$minPos = $coord;
 								$maxPos = $plusPos;
 								$peakDirection = "Opposit";
@@ -375,7 +375,7 @@ sub alignQV {
 sub resultsHeader {
 	my $cmdline = qx(ps -o args $$);
 	$cmdline =~ s/\n//g;
-	$cmdline =~ s/COM.*insider/insider/;
+	$cmdline =~ s/COM.*insider.pl/insider.pl/;
 	my $analysisDate = localtime();
 	
 	print OUTFILE "##\n";
