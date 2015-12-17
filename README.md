@@ -7,7 +7,7 @@ Check out Wiki to learn how to run InSiDeR - [Wiki](https://github.com/UppsalaGe
 
 
 
-Copyright (C) 2015 Ignas Bunikis, Adam Ameur
+Copyright (C) 2015-2016 Ignas Bunikis, Adam Ameur
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
