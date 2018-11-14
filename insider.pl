@@ -27,7 +27,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 
-my $insiderVersion = "version 1.6";
+my $insiderVersion = "version 1.7";
 
 ## Read command line arguments
 my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent, $singlePeaks, $printReads, $crispr) = get_args_and_error_check();
@@ -232,9 +232,13 @@ foreach my $key (sort keys %peaks) {
 	my $plusHeight = $value[3];
 	my $minusHeight = $value[4];
 	my $peakDirection = $value[5];
+
+	if(!($chr =~ /^chr.+/)){
+		$chr = "chr$chr";
+	}
 	
 	if($crispr){
-		print OUTFILE "$chr\t$minPos\t$plusHeight\n";
+		print OUTFILE "$chr\t$minPos\t$minPos\t$plusHeight\n";
 	}
 	else{
 		print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakDirection\n";
@@ -284,14 +288,20 @@ if ($singlePeaks) {
 	}
 		
 	foreach my $chr (sort keys %uniqPosReadsPlusAbMin) {
-
+			
 		foreach my $plusPos (sort {$a<=>$b} keys %{$uniqPosReadsPlusAbMin{$chr}}){
 			
 			my $plusHeight = scalar @{$uniqPosReadsPlusAbMin{$chr}{$plusPos}};
-			print OUTFILE "$chr\t$plusPos\t-\t$plusHeight\n";
+
+			if(!($chr =~ /^chr.+/)){
+				$chr = "chr$chr";
+			}
+			
+			print OUTFILE "$chr\t$plusPos\t$plusPos\t$plusHeight\n";
 			$totalNrpeaks++;
 			
 			if ($printReads) {
+				
 				my $fileName = $chr."_".$plusPos."_SinglePeak";
 				
 				if (-e "$fileName.fwd.fasta") {
@@ -315,14 +325,20 @@ if ($singlePeaks) {
 	}
 	
 	foreach my $chr (sort keys %uniqPosReadsMinusAbMin) {
-		
+
 		foreach my $minusPos (sort {$a<=>$b} keys %{$uniqPosReadsMinusAbMin{$chr}}){
 			
 			my $minusHeight = scalar @{$uniqPosReadsMinusAbMin{$chr}{$minusPos}};
-			print OUTFILE "$chr\t$minusPos\t-\t$minusHeight\n";
+
+			if(!($chr =~ /^chr.+/)){
+				$chr = "chr$chr";
+			}
+			
+			print OUTFILE "$chr\t$minusPos\t$minusPos\t$minusHeight\n";
 			$totalNrpeaks++;
 			
 			if ($printReads) {
+				
 				my $fileName = $chr."_".$minusPos."_SinglePeak";
 				
 				if (-e "$fileName.rev.fasta") {
