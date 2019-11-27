@@ -4,7 +4,7 @@
 ##
 ##   InSiDeR - virus integration site detection tool							 
 ##
-##   Copyright (C) 2015 Ignas Bunikis, Adam Ameur							 
+##   Copyright (C) 2015-2020 Ignas Bunikis, Adam Ameur							 
 ##																			 
 ##    This program is free software: you can redistribute it and/or modify    
 ##    it under the terms of the GNU General Public License as published by    
@@ -27,7 +27,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 
-my $insiderVersion = "version 1.7";
+my $insiderVersion = "version 1.8";
 
 ## Read command line arguments
 my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent, $singlePeaks, $printReads, $crispr) = get_args_and_error_check();
@@ -45,6 +45,7 @@ my %peaks = ();
 my %peakSupport = ();
 my %uniqPosReadsPlusAbMin = ();
 my %uniqPosReadsMinusAbMin = ();
+my $printchr = "";
 
 unless($silent){
 	print STDOUT "Reading data from $filename...\n";
@@ -233,15 +234,17 @@ foreach my $key (sort keys %peaks) {
 	my $minusHeight = $value[4];
 	my $peakDirection = $value[5];
 
-	if(!($chr =~ /^chr.+/)){
-		$chr = "chr$chr";
+	if(!($chr =~ /^(chr.+|hpv.+)/)){
+		$printchr = "chr$chr";
+	}  else {
+		$printchr = $chr;
 	}
 	
 	if($crispr){
-		print OUTFILE "$chr\t$minPos\t$minPos\t$plusHeight\n";
+		print OUTFILE "$printchr\t$minPos\t$minPos\t$plusHeight\n";
 	}
 	else{
-		print OUTFILE "$chr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakDirection\n";
+		print OUTFILE "$printchr\t$minPos\t$maxPos\t$plusHeight\t$minusHeight\t$peakDirection\n";
 	}
 	
 	$totalNrpeaks++;
@@ -293,11 +296,13 @@ if ($singlePeaks) {
 			
 			my $plusHeight = scalar @{$uniqPosReadsPlusAbMin{$chr}{$plusPos}};
 
-			if(!($chr =~ /^chr.+/)){
-				$chr = "chr$chr";
+			if(!($chr =~ /^(chr.+|hpv.+)/)){
+				$printchr = "chr$chr";
+			}  else {
+				$printchr = $chr;
 			}
 			
-			print OUTFILE "$chr\t$plusPos\t$plusPos\t$plusHeight\n";
+			print OUTFILE "$printchr\t$plusPos\t$plusPos\t$plusHeight\n";
 			$totalNrpeaks++;
 			
 			if ($printReads) {
@@ -330,11 +335,13 @@ if ($singlePeaks) {
 			
 			my $minusHeight = scalar @{$uniqPosReadsMinusAbMin{$chr}{$minusPos}};
 
-			if(!($chr =~ /^chr.+/)){
-				$chr = "chr$chr";
+			if(!($chr =~ /^(chr.+|hpv.+)/)){
+				$printchr = "chr$chr";
+			} else {
+				$printchr = $chr;
 			}
 			
-			print OUTFILE "$chr\t$minusPos\t$minusPos\t$minusHeight\n";
+			print OUTFILE "$printchr\t$minusPos\t$minusPos\t$minusHeight\n";
 			$totalNrpeaks++;
 			
 			if ($printReads) {
