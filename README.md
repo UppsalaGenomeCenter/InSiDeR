@@ -1,9 +1,9 @@
-InSiDeR
+Insider
 =======
 
-InSiDeR (Integration Site DetectoR) is a program designed for detecting integration sites from hybridization based capture of viral sequences. Our algorithm makes it possible to detect integration sites throughout the entire genome, with high sensitivity and specificity, by a rapid processing of single-end read alignments to the host genome. The method can be applied to any viruses for which the reference sequence has been established, and also to other types of transposable DNA elements.
+Insider is a program that identifies genomic positions where several aligned reads have the same start or end positions. The tool can be used to identify genomic positions for viral integration sites, or to find on- and off-target sites in CRISPR-Cas9 digested genomic DNA. In both cases, the sites are detected with high sensitivity and specificity, by a rapid processing of read alignments to the host genome.
 
-Check out Wiki to learn how to run InSiDeR - [Wiki](https://github.com/UppsalaGenomeCenter/InSiDeR/wiki)
+Check out Wiki to learn how to run Insider - [Wiki](https://github.com/UppsalaGenomeCenter/InSiDeR/wiki)
 
 
 
