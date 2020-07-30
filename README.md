@@ -1,7 +1,7 @@
 Insider
 =======
 
-Insider is a program that identifies genomic positions where several aligned reads have the same start or end positions. The tool can be used to identify genomic positions for viral integration sites, or to find on- and off-target sites in CRISPR-Cas9 digested genomic DNA. In both cases, the sites are detected with high sensitivity and specificity, by a rapid processing of read alignments to the host genome.
+Insider is a program that identifies genomic positions where several aligned reads have the same start or end positions. The tool can be used to identify genomic positions for viral integration sites, or to find on- and off-target sites in CRISPR-Cas9 digested genomic DNA. In both cases, the sites are detected with high sensitivity and specificity by rapid processing of read alignments.
 
 Check out Wiki to learn how to run Insider - [Wiki](https://github.com/UppsalaGenomeCenter/InSiDeR/wiki)
 
