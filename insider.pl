@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-#############################################################################
+#######################################################################################
 ##
-##   InSiDeR - virus integration site detection tool							 
+##   Insuder - integration & cleavage site detection tool							 
 ##
 ##   Copyright (C) 2015-2020 Ignas Bunikis, Adam Ameur							 
 ##																			 
@@ -19,7 +19,7 @@
 ##    You should have received a copy of the GNU General Public License       
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
-#############################################################################
+#######################################################################################
 
 use strict;
 use warnings;
@@ -27,13 +27,13 @@ use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 
-my $insiderVersion = "version 1.8";
+my $insiderVersion = "version 1.9";
 
 ## Read command line arguments
-my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent, $singlePeaks, $printReads, $crispr) = get_args_and_error_check();
+my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent, $singlePeaks, $printReads, $ots) = get_args_and_error_check();
 
 unless($silent){
-	print STDOUT "\n************ Running InSiDeR $insiderVersion **********\n\n";
+	print STDOUT "\n************ Running Insider $insiderVersion **********\n\n";
 }
 
 my %validReads = ();
@@ -64,7 +64,7 @@ while (my $row = <FILE>) {
 
 		if (!($samline[1] & 4)) {
 			my $samlineOK = 0;
-			if($crispr){
+			if($ots){
 				$samlineOK = 1;
 			}
 			else{
@@ -95,13 +95,13 @@ while (my $row = <FILE>) {
 						
 						if($strand eq "+"){
 							push @{$uniqPosReadsPlus{$chr}{$end_pos}}, $samline[0];
-							if($crispr){
+							if($ots){
 								push @{$uniqPosReadsPlus{$chr}{$start_pos}}, $samline[0];
 							}
 						}
 						if($strand eq "-"){
 							push @{$uniqPosReadsMinus{$chr}{$start_pos}}, $samline[0];
-							if($crispr){
+							if($ots){
 								push @{$uniqPosReadsMinus{$chr}{$end_pos}}, $samline[0];
 							}
 						}
@@ -117,7 +117,12 @@ close(FILE);
 
 unless($silent){
 	print STDOUT " - $validReadsNr/$allReadsNr reads met criteria for further analysis\n\n";
-	print STDOUT "Searching for sites of integrated DNA...\n"
+	if($ots){
+		print STDOUT "Searching for CRISPR-Cas9 cleavage sites...\n"
+	}
+	else{
+		print STDOUT "Searching for sites of integrated DNA...\n"
+	}
 }
 
 ## Filter Plus peaks by coverage
@@ -154,7 +159,7 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 
 		my $plusHeight = scalar @{$uniqPosReadsPlus{$chr}{$plusPos}};
 
-		if($crispr){
+		if($ots){
 			if(defined($uniqPosReadsMinus{$chr}{$plusPos})){
 				$plusHeight = scalar @{$uniqPosReadsMinus{$chr}{$plusPos}} + $plusHeight;
 			}
@@ -167,7 +172,7 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 				if(defined($uniqPosReadsMinus{$chr}{$coord})){
 					my $minusHeight = scalar @{$uniqPosReadsMinus{$chr}{$coord}};
 
-					if($crispr){
+					if($ots){
 						if(defined($uniqPosReadsPlus{$chr}{$coord})){
 							$minusHeight = scalar @{$uniqPosReadsPlus{$chr}{$coord}} + $minusHeight;
 						}
@@ -218,8 +223,8 @@ foreach my $chr (sort keys %uniqPosReadsPlus) {
 }
 
 my $totalNrpeaks = 0;
-my $outfileName = $outfile.".insider";
-open(OUTFILE,"> $outfileName") or die "Can't open file: $outfile\n";
+
+open(OUTFILE,"> $outfile") or die "Can't open file: $outfile\n";
 
 ## Print header information
 resultsHeader();
@@ -240,7 +245,7 @@ foreach my $key (sort keys %peaks) {
 		$printchr = $chr;
 	}
 	
-	if($crispr){
+	if($ots){
 		print OUTFILE "$printchr\t$minPos\t$minPos\t$plusHeight\n";
 	}
 	else{
@@ -280,13 +285,13 @@ foreach my $key (sort keys %peaks) {
 	
 }
 
-if($crispr){
+if($ots){
 	$singlePeaks = 1;
 }
 
 if ($singlePeaks) {
 
-	if(!$crispr){
+	if(!$ots){
 		print OUTFILE "#Single peaks on Plus strand:\n";
 	}
 		
@@ -325,7 +330,7 @@ if ($singlePeaks) {
 		}
 	}
 
-	if(!$crispr){
+	if(!$ots){
 		print OUTFILE "#Single peaks on Minus strand:\n";
 	}
 	
@@ -368,7 +373,7 @@ if ($singlePeaks) {
 close(OUTFILE);
 
 unless($silent){
-	print STDOUT " - All done! $totalNrpeaks sites written to $outfileName\n\n";
+	print STDOUT " - All done! $totalNrpeaks sites written to $outfile\n\n";
 }
 
 ########################
@@ -447,11 +452,11 @@ sub resultsHeader {
 	my $analysisDate = localtime();
 	
 	print OUTFILE "##\n";
-	print OUTFILE "## Results were generated using InSiDeR $insiderVersion\n";
+	print OUTFILE "## Results were generated using Insider $insiderVersion\n";
 	print OUTFILE "## The following command line was executed\:\n";
 	print OUTFILE "## $cmdline\n";
 	print OUTFILE "## Analysis was performed on $analysisDate\n";
-	print OUTFILE "## Thank you for choosing InSiDeR!\n";
+	print OUTFILE "## Thank you for choosing Insider!\n";
 	print OUTFILE "##\n";
 }
 
@@ -460,7 +465,7 @@ sub get_args_and_error_check {
 	
 	if (@ARGV == 0) {pod2usage(-exitval => 2, -verbose => 0);}
 	
-	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent,  $singlePeaks, $printReads, $crispr);
+	my ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent,  $singlePeaks, $printReads, $ots);
 
 	my $result = GetOptions("--help"           => sub{local *_=\$_[1];
 		pod2usage(-exitval =>2, -verbose => 1)},
@@ -475,7 +480,7 @@ sub get_args_and_error_check {
 		"-minl=i"          =>\$minAlignLen,
 		"-pr!"			   =>\$printReads,
 		"-ps!"			   =>\$singlePeaks,
-		"-crispr!"         =>\$crispr,					
+		"-ots!"            =>\$ots,					
 		"-silent!"         =>\$silent)|| pod2usage(-exitval => 2, -verbose => 1);
 
 	my $error_to_print;
@@ -557,7 +562,7 @@ sub get_args_and_error_check {
 	}
 
 	else{
-		return ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent, $singlePeaks, $printReads, $crispr);
+		return ($filename, $outfile, $offset, $minPeak, $minSupport, $minClipLen, $minMappingQV, $maxMappingMM, $minAlignLen, $silent, $singlePeaks, $printReads, $ots);
 	}
 	
 }
@@ -570,7 +575,7 @@ insider.pl
 	
 =head1 SYNOPSIS
 	
-./insider.pl [options] B<--help> B<-i> B<-o> B<-offset> B<-minp> B<-mins> B<-minc> B<-minqv> B<-maxmm> B<-pr B<-ps B<-silent>
+./insider.pl [options] B<--help> B<-i> B<-o> B<-ots> B<-offset> B<-minp> B<-mins> B<-minc> B<-minqv> B<-maxmm> B<-pr> B<-ps> B<-silent>
 
 =head1 OPTIONS
 
@@ -580,17 +585,21 @@ insider.pl
 
 =item B<-i>
 
-InSiDeR input file (SAM format).
+Input file (aligned reads in SAM format).
 
 =item B<-o>
 
-Output file prefix for InSiDeR results.
+Output file name.
 
 =item [OPTIONAL]
 
+=item B<-ots>
+
+Set this flag for analysis of CRISPR-Cas9 cleavage sites in off-target sequencing (OTS) data.
+
 =item B<-offset>
 
-Offest between left-end and right-end soft clipped alignments in host genome, used when searching for insertion sites (default 10).
+Offset between left-end and right-end soft clipped alignments in host genome, used when searching for insertion sites (default 10).
 
 =item B<-minp>
 
@@ -602,11 +611,11 @@ Minimum number soft clipped reads starting at the exact same position in the ins
 
 =item B<-minc>
 
-Minimum number of soft clipped bases required for a read to be considered in the InSiDeR analysis (default=20).
+Minimum number of soft clipped bases required for a read to be considered in the Insider analysis (default=20).
 
 =item B<-minqv>
 
-Minimum mapping QV value a read to be considered in the InSiDeR analysis (default=0).
+Minimum mapping QV value a read to be considered in the Insider analysis (default=0).
 
 =item B<-maxmm>
 
@@ -614,7 +623,7 @@ Maximum fraction (%) of mismatches in aligned part of a read (default=1).
 
 =item B<-minl>
 
-Minimum alignment length of the reads used in the InSiDeR analysis (default=0).
+Minimum alignment length of the reads used in the Insider analysis (default=0).
 
 =item B<-pr>
 
@@ -623,10 +632,6 @@ Generate read files in FASTA format for each identified integration site or sing
 =item B<-ps>
 
 In the result file include peaks that passed filtering, but did not have a corresponding peak on the opposite strand.
-
-=item B<-crispr>
-
-Set this flag to use InSiDeR for analysis of CRISPR/Cas9 on/off-targets in NoAmp sequencing data.
 
 =item B<-silent>
 
