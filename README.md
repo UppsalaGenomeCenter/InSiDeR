@@ -65,12 +65,6 @@ The three first result columns display the chromosome, start and end positions f
 
 
 
-
-
-Check out Wiki to learn how to run Insider - [Wiki](https://github.com/UppsalaGenomeCenter/InSiDeR/wiki)
-
-
-
 Copyright (C) 2015-2020 Ignas Bunikis, Adam Ameur
 
     This program is free software: you can redistribute it and/or modify
