@@ -2,7 +2,7 @@
 
 #######################################################################################
 ##
-##   Insuder - integration & cleavage site detection tool							 
+##   Insider - integration & cleavage site detection tool							 
 ##
 ##   Copyright (C) 2015-2020 Ignas Bunikis, Adam Ameur							 
 ##																			 
